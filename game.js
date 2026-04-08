@@ -13,6 +13,7 @@ function Jogo() {
     this.esperandoConfirmacao = false;
     this.estaAnimando = false;
     this.estaJogando = false;
+    this.isMenuDemo = false;
 
     this.timerTituloNivel = null;
     this.tempoRestanteTituloNivel = 0;
@@ -132,13 +133,13 @@ function Jogo() {
         repositorioImagens.spaceship.height,
       );
 
-      this.poolInimigos = new PoolDeObjetos(100);
+      this.poolInimigos = new PoolDeObjetos(150);
       this.poolInimigos.init("enemy");
 
       this.poolItens = new PoolDeObjetos(10);
       this.poolItens.init("item");
 
-      this.poolTirosInimigos = new PoolDeObjetos(50);
+      this.poolTirosInimigos = new PoolDeObjetos(150);
       this.poolTirosInimigos.init("enemyBullet");
 
       this.explosoes = [];
@@ -156,6 +157,7 @@ function Jogo() {
       this.explosao = new PoolDeSons(20);
       this.explosao.init("explosion");
 
+      // MÚSICA DE FUNDO DO JOGO
       this.audioFundo = new Audio("sounds/Gravity_Well_Ascent.mp3");
       this.audioFundo.loop = false;
       this.audioFundo.volume = 0.25;
@@ -164,6 +166,11 @@ function Jogo() {
         this.currentTime = 0;
         this.play();
       });
+
+      this.audioMenu = new Audio("sounds/menu_theme.mp3");
+      this.audioMenu.loop = true;
+      this.audioMenu.volume = 0.75;
+      this.audioMenu.load();
 
       this.audioGameOver = new Audio("sounds/game_over.mp3");
       this.audioGameOver.loop = false;
@@ -174,7 +181,12 @@ function Jogo() {
       this.atualizarHUDNivel();
 
       document.addEventListener("mousemove", function (e) {
-        if (jogo.estaJogando && !jogo.pausado && !jogo.esperandoConfirmacao) {
+        if (
+          jogo.estaJogando &&
+          !jogo.pausado &&
+          !jogo.esperandoConfirmacao &&
+          !jogo.isMenuDemo
+        ) {
           var rect = jogo.shipCanvas.getBoundingClientRect();
           var mouseX = e.clientX - rect.left;
           var novoX = mouseX - jogo.nave.width / 2;
@@ -199,11 +211,33 @@ function Jogo() {
 
   this.mostrarTela = function (id) {
     document.getElementById("start-screen").style.display = "none";
-    document.getElementById(id).style.display = "block";
+    var el = document.getElementById(id);
+    if (el) el.style.display = "block";
+
+    // Se estamos exibindo o menu principal, garanta que o tema do menu
+    // esteja tocando (quando não estiver em mute).
+    if (id === "start-screen" && this.audioMenu) {
+      try {
+        if (!this.estaMutado) this.audioMenu.play();
+      } catch (e) {
+        // play() pode falhar por políticas de autoplay — ignoramos.
+      }
+    }
   };
   this.esconderTela = function (id) {
-    document.getElementById(id).style.display = "none";
-    document.getElementById("start-screen").style.display = "block";
+    var el = document.getElementById(id);
+    if (el) el.style.display = "none";
+    var startEl = document.getElementById("start-screen");
+    if (startEl) startEl.style.display = "block";
+
+    // Ao retornar ao menu, certifique-se de tocar o tema do menu.
+    if (this.audioMenu) {
+      try {
+        if (!this.estaMutado) this.audioMenu.play();
+      } catch (e) {
+        // ignorar falha de autoplay
+      }
+    }
   };
 
   this.estaMutado = false;
@@ -213,11 +247,13 @@ function Jogo() {
     if (this.estaMutado) {
       this.audioFundo.volume = 0;
       this.audioGameOver.volume = 0;
+      this.audioMenu.volume = 0;
       btn.innerText = "DESLIGADO";
       btn.style.color = "#888";
     } else {
       this.audioFundo.volume = 0.25;
       this.audioGameOver.volume = 0.25;
+      this.audioMenu.volume = 0.25;
       btn.innerText = "LIGADO";
       btn.style.color = "#ffd700";
     }
@@ -262,12 +298,17 @@ function Jogo() {
     this.salvarRecorde(nome, this.pontuacaoJogador);
     document.getElementById(idInput).value = "";
     this.nivelAtual = 1;
-    this.reiniciar("menu");
+    this.voltarAoMenu();
   };
 
   this.voltarAoMenu = function () {
     this.nivelAtual = 1;
     this.reiniciar("menu");
+
+    document.getElementById("game-container").classList.add("demo-mode");
+    this.isMenuDemo = true;
+    this.gerarOnda(false);
+    this.iniciar();
   };
 
   this.atualizarHUDNivel = function () {
@@ -279,19 +320,31 @@ function Jogo() {
   };
 
   this.gerarOnda = function (mostrarTitulo) {
-    if (this.nivelAtual <= this.configsNiveis.length) {
-      this.configNivelAtual = this.configsNiveis[this.nivelAtual - 1];
-    } else {
-      var infMultiplicador = this.nivelAtual - this.configsNiveis.length;
+    if (this.isMenuDemo) {
       this.configNivelAtual = {
-        rows: Math.min(8, 5 + Math.floor(infMultiplicador / 2)),
-        cols: Math.min(12, 10 + Math.floor(infMultiplicador / 3)),
+        rows: 6,
+        cols: 12,
         types: [1, 2, 3],
-        speed: 2.5 + infMultiplicador * 0.2,
-        fireRate: 0.005 + infMultiplicador * 0.001,
-        bgSpeed: 3,
-        name: "SETOR DESCONHECIDO " + infMultiplicador,
+        speed: 3.5,
+        fireRate: 0.08,
+        bgSpeed: 4,
+        name: "",
       };
+    } else {
+      if (this.nivelAtual <= this.configsNiveis.length) {
+        this.configNivelAtual = this.configsNiveis[this.nivelAtual - 1];
+      } else {
+        var infMultiplicador = this.nivelAtual - this.configsNiveis.length;
+        this.configNivelAtual = {
+          rows: Math.min(8, 5 + Math.floor(infMultiplicador / 2)),
+          cols: Math.min(12, 10 + Math.floor(infMultiplicador / 3)),
+          types: [1, 2, 3],
+          speed: 2.5 + infMultiplicador * 0.2,
+          fireRate: 0.005 + infMultiplicador * 0.001,
+          bgSpeed: 3,
+          name: "SETOR DESCONHECIDO " + infMultiplicador,
+        };
+      }
     }
 
     var config = this.configNivelAtual;
@@ -321,14 +374,14 @@ function Jogo() {
     var textoNivel = document.getElementById("level-up-text");
     var telaNivel = document.getElementById("level-up-screen");
 
-    if (textoNivel) {
+    if (textoNivel && !this.isMenuDemo) {
       textoNivel.innerText = config.name;
     }
 
     if (telaNivel) {
       if (this.timerTituloNivel) clearTimeout(this.timerTituloNivel);
 
-      if (mostrarTitulo) {
+      if (mostrarTitulo && !this.isMenuDemo) {
         telaNivel.style.display = "block";
         this.tituloNivelVisivel = true;
         this.tempoRestanteTituloNivel = 2000;
@@ -364,7 +417,23 @@ function Jogo() {
   this.iniciar = function () {
     this.estaJogando = true;
     this.nave.draw();
-    this.audioFundo.play();
+
+    if (this.isMenuDemo) {
+      this.audioFundo.pause();
+      if (!this.estaMutado)
+        this.audioMenu
+          .play()
+          .catch((e) =>
+            console.log(
+              "Autoplay bloqueado pelo navegador até o usuário clicar",
+            ),
+          );
+    } else {
+      this.audioMenu.pause();
+      this.audioMenu.currentTime = 0;
+      if (!this.estaMutado) this.audioFundo.play();
+    }
+
     if (!this.estaAnimando) animar();
   };
 
@@ -373,7 +442,8 @@ function Jogo() {
       this.nave.vivo &&
       !this.venceu &&
       !this.esperandoConfirmacao &&
-      this.estaJogando
+      this.estaJogando &&
+      !this.isMenuDemo
     ) {
       this.pausado = !this.pausado;
       document.getElementById("pause-screen").style.display = this.pausado
@@ -407,7 +477,12 @@ function Jogo() {
   };
 
   this.confirmarReiniciar = function () {
-    if (!this.esperandoConfirmacao && !this.venceu && this.estaJogando) {
+    if (
+      !this.esperandoConfirmacao &&
+      !this.venceu &&
+      this.estaJogando &&
+      !this.isMenuDemo
+    ) {
       this.esperandoConfirmacao = true;
       this.pausado = true;
       document.getElementById("confirm-restart").style.display = "block";
@@ -488,7 +563,7 @@ function Jogo() {
     if (condicao !== "continue" && condicao !== "nextLevel") {
       this.pontuacaoJogador = 0;
       this.vidasJogador = 3;
-      this.nivelAtual = 1;
+      if (!this.isMenuDemo) this.nivelAtual = 1;
     }
 
     this.poolInimigos.init("enemy");
@@ -520,11 +595,25 @@ function Jogo() {
 
     if (condicao === "menu") {
       this.audioFundo.pause();
+      this.audioFundo.currentTime = 0;
+
+      if (!this.estaMutado) {
+        this.audioMenu
+          .play()
+          .catch((e) =>
+            console.log(
+              "Autoplay bloqueado pelo navegador até o usuário clicar",
+            ),
+          );
+      }
 
       var telaInicial = document.getElementById("start-screen");
       if (telaInicial) telaInicial.style.display = "block";
     } else if (condicao !== "continue") {
-      if (this.audioFundo.paused) this.audioFundo.play();
+      this.audioMenu.pause();
+      this.audioMenu.currentTime = 0;
+      if (this.audioFundo.paused && !this.isMenuDemo && !this.estaMutado)
+        this.audioFundo.play();
       this.iniciar();
     } else {
       this.estaJogando = true;
@@ -558,7 +647,7 @@ function Jogo() {
     this.estaJogando = false;
     this.audioFundo.pause();
     this.audioGameOver.currentTime = 0;
-    this.audioGameOver.play();
+    if (!this.estaMutado) this.audioGameOver.play();
     document.getElementById("game-over-reason").innerText = motivo || "";
     document.getElementById("game-over").style.display = "block";
     setTimeout(function () {
@@ -568,18 +657,48 @@ function Jogo() {
 }
 
 function checarEstadoPronto() {
-  if (jogo.audioGameOver.readyState === 4 && jogo.audioFundo.readyState === 4) {
+  if (
+    jogo.audioGameOver.readyState === 4 &&
+    jogo.audioFundo.readyState === 4 &&
+    jogo.audioMenu.readyState >= 3
+  ) {
     window.clearInterval(jogo.checarAudio);
+
+    // Exibe a Splash Screen
     document.getElementById("splash-screen").style.display = "flex";
-    setTimeout(function () {
-      document.getElementById("splash-screen").style.display = "none";
-      document.getElementById("start-screen").style.display = "block";
-    }, 2500);
+
+    // Altera o texto para avisar que está pronto e aguardar o clique
+    var elStatus = document.getElementById("splash-status");
+    if (elStatus) {
+      elStatus.innerText = "Clique para iniciar";
+      elStatus.style.color = "#ffd700"; // Cor de destaque
+    }
   }
+}
+
+function cliqueiNoSplash() {
+  var elStatus = document.getElementById("splash-status");
+  // Só prossegue se o status for "PRONTO!" (carregamento concluído)
+  if (!elStatus || elStatus.innerText.indexOf("sons") !== -1) return;
+
+  // Esconde Splash
+  document.getElementById("splash-screen").style.display = "none";
+
+  // Transição normal para o menu demo (código que estava no setTimeout antigo)
+  document.getElementById("start-screen").style.display = "block";
+  document.getElementById("game-container").classList.add("demo-mode");
+  jogo.isMenuDemo = true;
+  jogo.reiniciar("menu");
+  jogo.gerarOnda(false);
+
+  // IMPORTANTE: iniciar() agora rodará DEPOIS do clique, liberando o áudio
+  jogo.iniciar();
 }
 
 function iniciarJogo() {
   document.getElementById("start-screen").style.display = "none";
+  document.getElementById("game-container").classList.remove("demo-mode");
+  jogo.isMenuDemo = false;
   jogo.nivelAtual = 1;
   jogo.reiniciar();
 }
@@ -598,7 +717,7 @@ function animar() {
   }
 
   if (jogo.timerLentidao > 0) jogo.timerLentidao--;
-  jogo.atualizarHUDNivel();
+  if (!jogo.isMenuDemo) jogo.atualizarHUDNivel();
 
   jogo.quadTree.clear();
   jogo.quadTree.insert(jogo.nave);
@@ -612,7 +731,11 @@ function animar() {
   var inimigos = jogo.poolInimigos.getPool();
 
   if (inimigos.length === 0) {
-    jogo.proximoNivel();
+    if (jogo.isMenuDemo) {
+      jogo.gerarOnda(false);
+    } else {
+      jogo.proximoNivel();
+    }
     requestAnimFrame(animar);
     return;
   }
@@ -642,10 +765,15 @@ function animar() {
   }
 
   if (bateuNoFundo) {
-    jogo.nave.vivo = false;
-    jogo.gameOver("A invasão atingiu o solo!");
-    jogo.estaAnimando = false;
-    return;
+    if (jogo.isMenuDemo) {
+      jogo.formacaoY = 50;
+      jogo.formacaoAlvoY = 50;
+    } else {
+      jogo.nave.vivo = false;
+      jogo.gameOver("A invasão atingiu o solo!");
+      jogo.estaAnimando = false;
+      return;
+    }
   }
 
   if (bateuNaBorda) {

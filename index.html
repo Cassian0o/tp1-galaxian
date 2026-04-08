@@ -23,11 +23,25 @@
       </div>
       <div class="score"><span id="score">0</span></div>
 
-      <div class="overlay-screen" id="splash-screen" style="display: none">
+      <div
+        class="overlay-screen"
+        id="splash-screen"
+        style="display: none; cursor: pointer"
+        onclick="cliqueiNoSplash()"
+      >
         <h1 style="color: #ffd700; font-size: 60px; margin: 0">
           Cassiano GAMES
         </h1>
         <p style="font-size: 20px; color: #fff">APRESENTA</p>
+        <p
+          id="splash-status"
+          style="
+            font-size: 14px;
+            color: #888;
+            margin-top: 30px;
+            animation: piscar 1s infinite;
+          "
+        ></p>
       </div>
 
       <div class="overlay-screen" id="start-screen" style="display: none">

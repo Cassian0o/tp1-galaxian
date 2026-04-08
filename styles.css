@@ -158,3 +158,18 @@ canvas {
   margin-top: 20px;
   padding-left: 20px;
 }
+
+.demo-mode canvas {
+  filter: brightness(0.35) blur(2px);
+  transition: filter 0.5s ease-in-out;
+}
+
+@keyframes piscar {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}

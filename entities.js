@@ -131,39 +131,58 @@ function Nave() {
     contador++;
     if (this.timerTiroMultiplo > 0) this.timerTiroMultiplo--;
 
-    if (STATUS_TECLAS.left || STATUS_TECLAS.right) {
+    if (jogo.isMenuDemo) {
+      // MODO DEMO: IA Controla a Nave em Zigue-Zague
       this.context.clearRect(this.x, this.y, this.width, this.height);
-      if (STATUS_TECLAS.left) {
-        this.x -= this.velocidade;
-        if (this.x <= 0) this.x = 0;
-      } else if (STATUS_TECLAS.right) {
-        this.x += this.velocidade;
-        if (this.x >= this.canvasWidth - this.width)
-          this.x = this.canvasWidth - this.width;
+      this.x =
+        this.canvasWidth / 2 -
+        this.width / 2 +
+        Math.sin(Date.now() / 400) * (this.canvasWidth / 3);
+
+      if (contador >= taxaDeTiro / 2) {
+        // Atira mais rápido no demo
+        this.atirar();
+        contador = 0;
+      }
+    } else {
+      // MODO JOGADOR: Teclado/Mouse
+      if (STATUS_TECLAS.left || STATUS_TECLAS.right) {
+        this.context.clearRect(this.x, this.y, this.width, this.height);
+        if (STATUS_TECLAS.left) {
+          this.x -= this.velocidade;
+          if (this.x <= 0) this.x = 0;
+        } else if (STATUS_TECLAS.right) {
+          this.x += this.velocidade;
+          if (this.x >= this.canvasWidth - this.width)
+            this.x = this.canvasWidth - this.width;
+        }
+      }
+
+      if (STATUS_TECLAS.space && contador >= taxaDeTiro && !this.colidindo) {
+        this.atirar();
+        contador = 0;
       }
     }
 
-    if (!this.colidindo) {
+    if (!this.colidindo || jogo.isMenuDemo) {
+      this.colidindo = false; // Demo mode: Ignora dano físico (imortal)
       this.draw();
     } else {
       this.hit();
     }
-
-    if (STATUS_TECLAS.space && contador >= taxaDeTiro && !this.colidindo) {
-      this.atirar();
-      contador = 0;
-    }
   };
 
   this.atirar = function () {
-    if (this.timerTiroMultiplo > 0) {
+    if (this.timerTiroMultiplo > 0 || jogo.isMenuDemo) {
+      // Demo sempre atira múltiplo
       this.poolDeTiros.get(this.x + this.width / 2 - 3, this.y, [0, 6]);
       this.poolDeTiros.get(this.x, this.y + 10, [1, 5]);
       this.poolDeTiros.get(this.x + this.width - 6, this.y + 10, [-1, 5]);
     } else {
       this.poolDeTiros.get(this.x + this.width / 2 - 3, this.y, [0, 6]);
     }
-    jogo.laser.get();
+    // Não toca o barulho de tiro durante o menu pra não estourar ouvidos
+    if (!jogo.isMenuDemo) jogo.laser.get();
   };
 
   this.hit = function () {
@@ -179,7 +198,8 @@ function Nave() {
         true,
       ),
     });
-    jogo.explosao.get();
+    if (!jogo.isMenuDemo) jogo.explosao.get();
+
     jogo.vidasJogador -= 1;
     jogo.atualizarHUDVidas();
 
@@ -344,9 +364,10 @@ function Inimigo() {
 
         var pontosBase = this.tipoInimigo * 10;
         var bonusAltura = Math.floor(this.y / 15);
-        jogo.pontuacaoJogador += pontosBase + bonusAltura;
+        if (!jogo.isMenuDemo) jogo.pontuacaoJogador += pontosBase + bonusAltura;
 
-        if (Math.random() < 0.1) {
+        if (Math.random() < 0.1 && !jogo.isMenuDemo) {
+          // Não dropa itens no menu para não poluir
           var tiposItens = ["multi", "slow", "bomb"];
 
           if (jogo.vidasJogador < 3) {
@@ -363,7 +384,7 @@ function Inimigo() {
           );
         }
 
-        jogo.explosao.get();
+        if (!jogo.isMenuDemo) jogo.explosao.get();
         return true;
       }
       this.colidindo = false;
@@ -422,7 +443,6 @@ function Item() {
           jogo.atualizarHUDVidas();
         }
       }
-
       jogo.pontuacaoJogador += 50;
       return true;
     } else if (this.y >= this.canvasHeight) {
