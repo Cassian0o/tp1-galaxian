@@ -23,40 +23,40 @@ function Jogo() {
     this.nivelAtual = 1;
     this.configsNiveis = [
       {
-        rows: 3,
-        cols: 8,
+        rows: 4,
+        cols: 10,
         types: [1],
-        speed: 1.0,
-        fireRate: 0.002,
-        bgSpeed: 1,
-        name: "SETOR ALFA",
-      },
-      {
-        rows: 4,
-        cols: 8,
-        types: [1, 1, 2],
-        speed: 1.5,
-        fireRate: 0.003,
-        bgSpeed: 1.5,
-        name: "CINTURÃO DE ÓRION",
-      },
-      {
-        rows: 4,
-        cols: 9,
-        types: [1, 2, 3],
         speed: 1.8,
-        fireRate: 0.004,
-        bgSpeed: 2,
-        name: "ZONA VERMELHA",
+        fireRate: 0.005,
+        bgSpeed: 1.5,
+        name: "SETOR ALFA",
       },
       {
         rows: 5,
         cols: 10,
-        types: [1, 2, 2, 3],
-        speed: 2.2,
-        fireRate: 0.005,
+        types: [1, 1, 2],
+        speed: 2.5,
+        fireRate: 0.01,
+        bgSpeed: 2,
+        name: "SETOR BETA",
+      },
+      {
+        rows: 5,
+        cols: 11,
+        types: [1, 2, 3],
+        speed: 3.2,
+        fireRate: 0.015,
         bgSpeed: 2.5,
-        name: "FROTA ESTELAR NEGRA",
+        name: "ZONA VERMELHA",
+      },
+      {
+        rows: 6,
+        cols: 12,
+        types: [1, 2, 2, 3],
+        speed: 4.0,
+        fireRate: 0.025,
+        bgSpeed: 3,
+        name: "FROTA ESTELAR LA BESTIA NEGRA",
       },
     ];
     this.configNivelAtual = this.configsNiveis[0];
@@ -207,6 +207,19 @@ function Jogo() {
         checarEstadoPronto();
       }, 1000);
     }
+
+    this.voltarAoMenu = function () {
+      this.nivelAtual = 1;
+      this.reiniciar("menu");
+      document.getElementById("lives-container").style.display = "none";
+      document.querySelector(".score").style.display = "none";
+      document.querySelector(".controls-hint").style.display = "none";
+
+      document.getElementById("game-container").classList.add("demo-mode");
+      this.isMenuDemo = true;
+      this.gerarOnda(false);
+      this.iniciar();
+    };
   };
 
   this.mostrarTela = function (id) {
@@ -220,7 +233,7 @@ function Jogo() {
       try {
         if (!this.estaMutado) this.audioMenu.play();
       } catch (e) {
-        // play() pode falhar por políticas de autoplay — ignoramos.
+        // play() pode falhar por políticas de autoplay — IGNORAR
       }
     }
   };
@@ -698,6 +711,11 @@ function cliqueiNoSplash() {
 function iniciarJogo() {
   document.getElementById("start-screen").style.display = "none";
   document.getElementById("game-container").classList.remove("demo-mode");
+
+  document.getElementById("lives-container").style.display = "block";
+  document.querySelector(".score").style.display = "block";
+  document.querySelector(".controls-hint").style.display = "block";
+
   jogo.isMenuDemo = false;
   jogo.nivelAtual = 1;
   jogo.reiniciar();
@@ -779,7 +797,7 @@ function animar() {
   if (bateuNaBorda) {
     jogo.direcaoFormacao *= -1;
     jogo.velocidadeInimigoX += 0.05;
-    jogo.formacaoAlvoY += 20;
+    jogo.formacaoAlvoY += 60;
   }
 
   if (jogo.formacaoY < jogo.formacaoAlvoY) {

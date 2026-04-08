@@ -397,7 +397,7 @@ function Inimigo() {
     jogo.poolTirosInimigos.get(
       this.x + this.width / 2 - larguraTiro / 2,
       this.y + this.height,
-      [0, -1.5],
+      [0, -2.9],
     );
   };
 
