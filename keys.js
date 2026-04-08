@@ -48,3 +48,22 @@ document.onkeypress = function (e) {
     mutar();
   }
 };
+
+document.onkeypress = function (e) {
+  if (e.target.tagName.toLowerCase() === "input") return;
+
+  if (e.which === 114 || e.which === 82 || e.key === "r" || e.key === "R") {
+    if (!jogo.nave.vivo || jogo.venceu) {
+      jogo.reiniciar();
+    } else {
+      jogo.confirmarReiniciar();
+    }
+  } else if (
+    e.which === 109 ||
+    e.which === 77 ||
+    e.key === "m" ||
+    e.key === "M"
+  ) {
+    jogo.alternarSom();
+  }
+};

@@ -256,19 +256,37 @@ function Jogo() {
   this.estaMutado = false;
   this.alternarSom = function () {
     this.estaMutado = !this.estaMutado;
+
+    // Atualiza o texto da tela de opções (se ela existir)
     var btn = document.getElementById("sound-status");
+    if (btn) {
+      if (this.estaMutado) {
+        btn.innerText = "DESLIGADO";
+        btn.style.color = "#888";
+      } else {
+        btn.innerText = "LIGADO";
+        btn.style.color = "#ffd700";
+      }
+    }
+
+    // Aplica a regra de mudo aos sons
     if (this.estaMutado) {
+      this.audioFundo.pause(); // Força pausa imediata
+      this.audioMenu.pause(); // Força pausa imediata
       this.audioFundo.volume = 0;
       this.audioGameOver.volume = 0;
       this.audioMenu.volume = 0;
-      btn.innerText = "DESLIGADO";
-      btn.style.color = "#888";
     } else {
       this.audioFundo.volume = 0.25;
       this.audioGameOver.volume = 0.25;
       this.audioMenu.volume = 0.25;
-      btn.innerText = "LIGADO";
-      btn.style.color = "#ffd700";
+
+      // Retoma a música correta dependendo do estado atual do jogo
+      if (this.isMenuDemo) {
+        this.audioMenu.play().catch((e) => console.log("Aguardando interação"));
+      } else if (this.estaJogando && !this.pausado) {
+        this.audioFundo.play();
+      }
     }
   };
 
