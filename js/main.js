@@ -5,7 +5,7 @@
 */
 import { AssetManager, assets } from "./engine/Assets.js";
 import { input } from "./engine/Input.js";
-import Game from "/core/Game.js";
+import Game from "./core/Game.js";
 
 const game = new Game();
 
