@@ -1,7 +1,7 @@
-<!-- index.html -->
 <!doctype html>
-<html>
+<html lang="pt-BR">
   <head>
+    <meta charset="UTF-8" />
     <title>Defensor Espacial</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
@@ -27,7 +27,6 @@
         class="overlay-screen"
         id="splash-screen"
         style="display: none; cursor: pointer"
-        onclick="cliqueiNoSplash()"
       >
         <h1 class="fade-in" style="color: #ffd700; font-size: 60px; margin: 0">
           Cassiano GAMES
@@ -38,7 +37,6 @@
         >
           APRESENTA
         </p>
-
         <p
           id="splash-status"
           class="fade-in"
@@ -53,17 +51,11 @@
 
       <div class="overlay-screen" id="start-screen" style="display: none">
         DEFENSOR ESPACIAL
-        <p><span onclick="iniciarJogo()">Iniciar Jogo</span></p>
-        <p>
-          <span onclick="jogo.mostrarTela('instructions-screen')"
-            >Instruções</span
-          >
-        </p>
-        <p><span onclick="jogo.mostrarTela('options-screen')">Opções</span></p>
-        <p><span onclick="jogo.mostrarRecordes()">Recordes</span></p>
-        <p>
-          <span onclick="jogo.mostrarTela('credits-screen')">Créditos</span>
-        </p>
+        <p><span id="btn-iniciar">Iniciar Jogo</span></p>
+        <p><span id="btn-instrucoes">Instruções</span></p>
+        <p><span id="btn-opcoes">Opções</span></p>
+        <p><span id="btn-recordes">Recordes</span></p>
+        <p><span id="btn-creditos">Créditos</span></p>
       </div>
 
       <div
@@ -85,7 +77,9 @@
           Pegue itens para Tiro Múltiplo, Lentidão e Bombas!
         </p>
         <p>
-          <span onclick="jogo.esconderTela('instructions-screen')">Voltar</span>
+          <span class="btn-voltar-menu" data-target="instructions-screen"
+            >Voltar</span
+          >
         </p>
       </div>
 
@@ -97,14 +91,13 @@
         OPÇÕES
         <p>
           <b>Som e Música:</b>
-          <span
-            id="sound-status"
-            onclick="jogo.alternarSom()"
-            style="color: #ffd700"
-            >LIGADO</span
+          <span id="sound-status" style="color: #ffd700">LIGADO</span>
+        </p>
+        <p>
+          <span class="btn-voltar-menu" data-target="options-screen"
+            >Voltar</span
           >
         </p>
-        <p><span onclick="jogo.esconderTela('options-screen')">Voltar</span></p>
       </div>
 
       <div
@@ -119,16 +112,20 @@
           <b>Música:</b> Gravity Well Ascent - By Gemini<br />
           <b>Motor:</b> HTML5 Canvas Nativo
         </p>
-        <p><span onclick="jogo.esconderTela('credits-screen')">Voltar</span></p>
+        <p>
+          <span class="btn-voltar-menu" data-target="credits-screen"
+            >Voltar</span
+          >
+        </p>
       </div>
 
       <div class="overlay-screen" id="highscore-screen" style="display: none">
         MELHORES JOGADORES
         <ol id="highscore-list"></ol>
-        <p><span onclick="jogo.esconderRecordes()">Voltar</span></p>
+        <p><span id="btn-esconder-recordes">Voltar</span></p>
       </div>
 
-      <div class="overlay-screen" id="game-over">
+      <div class="overlay-screen" id="game-over" style="display: none">
         FIM DE JOGO<br /><span
           style="font-size: 14px; color: #ff5555"
           id="game-over-reason"
@@ -141,38 +138,51 @@
             placeholder="SEU NOME (MAX 10)"
             maxlength="10"
           />
-          <p>
-            <span onclick="jogo.salvarPontuacaoEReiniciar('lose')"
-              >Salvar e Voltar</span
-            >
-          </p>
+          <p><span id="btn-salvar-lose">Salvar e Voltar</span></p>
         </div>
         <p>
-          <span onclick="jogo.reiniciar()">Reiniciar sem salvar</span>
-          <span onclick="jogo.voltarAoMenu()">Voltar ao Menu</span>
+          <span id="btn-reiniciar-sem-salvar">Reiniciar sem salvar</span>
+          <span class="btn-voltar-ao-menu">Voltar ao Menu</span>
         </p>
       </div>
 
-      <div class="overlay-screen" id="pause-screen">
+      <div class="overlay-screen" id="game-win" style="display: none">
+        VITÓRIA!<br />
+        <div>
+          <input
+            type="text"
+            id="player-name-win"
+            class="input-name"
+            placeholder="SEU NOME (MAX 10)"
+            maxlength="10"
+          />
+          <p><span id="btn-salvar-win">Salvar e Voltar</span></p>
+        </div>
+        <p>
+          <span class="btn-voltar-ao-menu">Voltar ao Menu</span>
+        </p>
+      </div>
+
+      <div class="overlay-screen" id="pause-screen" style="display: none">
         PAUSADO
         <p>
-          <span onclick="jogo.alternarPausa()">Continuar</span>
-          <span onclick="jogo.voltarAoMenu()">Voltar ao Menu</span>
+          <span id="btn-continuar">Continuar</span>
+          <span class="btn-voltar-ao-menu">Voltar ao Menu</span>
         </p>
       </div>
 
-      <div class="overlay-screen" id="confirm-restart">
+      <div class="overlay-screen" id="confirm-restart" style="display: none">
         REINICIAR JOGO?
         <p>
-          <span onclick="jogo.reiniciar()">Sim</span>
-          <span onclick="jogo.cancelarReiniciar()">Não</span>
+          <span id="btn-confirmar-reiniciar">Sim</span>
+          <span id="btn-cancelar-reiniciar">Não</span>
         </p>
       </div>
 
       <div
         class="overlay-screen"
         id="level-up-screen"
-        style="background: transparent; border: none"
+        style="background: transparent; border: none; display: none"
       >
         <h2 style="color: #ffd700" id="level-up-text">NÍVEL CONCLUÍDO!</h2>
       </div>
@@ -183,10 +193,6 @@
       </div>
     </div>
 
-    <script src="utils.js"></script>
-    <script src="keys.js"></script>
-    <script src="entities.js"></script>
-    <script src="sprite.js"></script>
-    <script src="game.js"></script>
+    <script type="module" src="js/main.js"></script>
   </body>
 </html>
