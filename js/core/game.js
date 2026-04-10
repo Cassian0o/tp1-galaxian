@@ -131,9 +131,10 @@ export default class Game {
     this.nave.y = this.naveStartY;
     this.nave.vivo = true;
     this.nave.colidindo = false;
+    this.nave.timerInvulnerabilidade = 0; // NOVO: Remove proteção antiga ao reiniciar
     this.explosoes = [];
     this.timerLentidao = 0;
-    this.timerApresentacaoFase = 0; // Garante que zera ao reiniciar
+    this.timerApresentacaoFase = 0;
     this.quadTree.clear();
   }
 
@@ -247,6 +248,16 @@ export default class Game {
           objetos[x].y < obj[y].y + obj[y].height &&
           objetos[x].y + objetos[x].height > obj[y].y
         ) {
+          // NOVO: Ignora a colisão por completo caso a nave esteja com a proteção ativa
+          const naveXInmune =
+            objetos[x].tipo === "ship" && objetos[x].timerInvulnerabilidade > 0;
+          const naveYInmune =
+            obj[y].tipo === "ship" && obj[y].timerInvulnerabilidade > 0;
+
+          if (naveXInmune || naveYInmune) {
+            continue; // Pula a colisão, fazendo balas/inimigos passarem através
+          }
+
           if (objetos[x].tipo === "item") {
             objetos[x].colidindo = true;
           } else if (obj[y].tipo === "item") {

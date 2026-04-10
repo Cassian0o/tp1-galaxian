@@ -27,6 +27,9 @@ export default class Ship extends Entity {
     this.tipo = "ship";
     this.timerTiroMultiplo = 0;
 
+    // NOVO: Relógio que controla o tempo de invulnerabilidade
+    this.timerInvulnerabilidade = 0;
+
     const img = assets.images.spaceship;
     this.init(
       this.canvasWidth / 2 - img.width / 2,
@@ -38,12 +41,22 @@ export default class Ship extends Entity {
   }
 
   draw() {
+    // NOVO: Se estiver invulnerável, alterna entre desenhar e não desenhar a cada 8 frames (efeito de piscar rápido)
+    if (
+      this.timerInvulnerabilidade > 0 &&
+      Math.floor(this.timerInvulnerabilidade / 8) % 2 === 0
+    ) {
+      return;
+    }
     this.context.drawImage(assets.images.spaceship, this.x, this.y);
   }
 
   move() {
     this.contador++;
     if (this.timerTiroMultiplo > 0) this.timerTiroMultiplo--;
+
+    // NOVO: Reduz o relógio de proteção até chegar a zero
+    if (this.timerInvulnerabilidade > 0) this.timerInvulnerabilidade--;
 
     if (this.game.isMenuDemo) {
       this.context.clearRect(this.x, this.y, this.width, this.height);
@@ -66,7 +79,6 @@ export default class Ship extends Entity {
           );
       }
 
-      // SÓ DEIXA ATIRAR SE A FASE JÁ TIVER COMEÇADO DE VERDADE
       if (
         input.keys.space &&
         this.contador >= this.taxaDeTiro &&
@@ -111,6 +123,10 @@ export default class Ship extends Entity {
     } else {
       this.colidindo = false;
       this.timerTiroMultiplo = 0;
+
+      // NOVO: Aplica a proteção de 2 segundos (120 frames a 60fps)
+      this.timerInvulnerabilidade = 120;
+
       this.context.clearRect(this.x, this.y, this.width, this.height);
       this.x = this.game.naveStartX;
       this.y = this.game.naveStartY;
