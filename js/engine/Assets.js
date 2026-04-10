@@ -1,8 +1,11 @@
-// js/engine/Assets.js
-export const assets = {
-  images: {},
-  sounds: {},
-};
+/*
+  Assets.js
+  - Gerencia carregamento e armazenamento de imagens e áudios usados pelo jogo.
+  - Fornece métodos para carregar individualmente ou carregar tudo em paralelo.
+  - Para áudio: resolve a promise quando `canplaythrough` ou `error` ocorrer, e tem
+    um timeout de fallback para evitar travamento caso o browser não dispare eventos.
+*/
+export const assets = { images: {}, sounds: {} };
 
 export class AssetManager {
   static async carregarImagem(key, src) {
@@ -14,7 +17,7 @@ export class AssetManager {
       };
       img.onerror = () => {
         console.warn(`Falha ao carregar imagem: ${src}`);
-        resolve(img); // Resolve mesmo com erro para não travar o jogo
+        resolve(img);
       };
       img.src = src;
     });
@@ -34,11 +37,9 @@ export class AssetManager {
         resolve(audio);
       };
 
-      // Tenta resolver se carregou perfeitamente ou se deu erro
       audio.addEventListener("canplaythrough", finalizar, { once: true });
       audio.addEventListener("error", finalizar, { once: true });
 
-      // Trava de segurança: Se o navegador demorar mais de 1.5s, força a inicialização
       setTimeout(finalizar, 1500);
 
       audio.load();

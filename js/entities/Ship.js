@@ -1,4 +1,8 @@
-// js/entities/Ship.js
+/*
+  Ship.js
+  - Entidade do jogador: movimento, tiro e estado de vida.
+  - Mantém um pool de tiros do jogador e timers para power-ups e invulnerabilidade.
+*/
 import Entity from "./Entity.js";
 import { input } from "../engine/Input.js";
 import { assets } from "../engine/Assets.js";
@@ -27,7 +31,7 @@ export default class Ship extends Entity {
     this.tipo = "ship";
     this.timerTiroMultiplo = 0;
 
-    // NOVO: Relógio que controla o tempo de invulnerabilidade
+    // Relógio que controla o tempo de invulnerabilidade após ser atingido
     this.timerInvulnerabilidade = 0;
 
     const img = assets.images.spaceship;
@@ -40,8 +44,8 @@ export default class Ship extends Entity {
     this.vivo = true;
   }
 
+  // Desenha a nave; se invulnerável ela pisca (não desenha em alguns frames)
   draw() {
-    // NOVO: Se estiver invulnerável, alterna entre desenhar e não desenhar a cada 8 frames (efeito de piscar rápido)
     if (
       this.timerInvulnerabilidade > 0 &&
       Math.floor(this.timerInvulnerabilidade / 8) % 2 === 0
@@ -51,11 +55,10 @@ export default class Ship extends Entity {
     this.context.drawImage(assets.images.spaceship, this.x, this.y);
   }
 
+  // Move a nave conforme input ou comportamento demo; controla taxa de tiro e timers
   move() {
     this.contador++;
     if (this.timerTiroMultiplo > 0) this.timerTiroMultiplo--;
-
-    // NOVO: Reduz o relógio de proteção até chegar a zero
     if (this.timerInvulnerabilidade > 0) this.timerInvulnerabilidade--;
 
     if (this.game.isMenuDemo) {
@@ -110,6 +113,7 @@ export default class Ship extends Entity {
     if (!this.game.isMenuDemo) this.game.laserSound.get();
   }
 
+  // Tratamento quando a nave é atingida: explosão, perder vida e aplicar invulnerabilidade temporária
   hit() {
     this.game.criarExplosao(this.x, this.y);
     if (!this.game.isMenuDemo) this.game.explosionSound.get();
@@ -123,9 +127,7 @@ export default class Ship extends Entity {
     } else {
       this.colidindo = false;
       this.timerTiroMultiplo = 0;
-
-      // NOVO: Aplica a proteção de 2 segundos (120 frames a 60fps)
-      this.timerInvulnerabilidade = 120;
+      this.timerInvulnerabilidade = 120; // proteção temporária após perder uma vida
 
       this.context.clearRect(this.x, this.y, this.width, this.height);
       this.x = this.game.naveStartX;

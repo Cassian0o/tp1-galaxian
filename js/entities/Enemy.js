@@ -1,4 +1,9 @@
-// js/entities/Enemy.js
+/*
+  Enemy.js
+  - Representa inimigos que podem estar em formação, executar ataques (swoop) e morrer.
+  - Estados: 'idle' (na formação), 'swoop' (ataque em Bezier) e 'return' (volta à formação).
+  - O método draw atualiza posicionamento, decide atacar e trata a morte/drop de itens.
+*/
 import Entity from "./Entity.js";
 import { assets } from "../engine/Assets.js";
 
@@ -50,7 +55,7 @@ export default class Enemy extends Entity {
     );
 
     if (!this.colidindo) {
-      // 1. TRAVA ABSOLUTA DE APRESENTAÇÃO: Enquanto o título estiver na tela, eles SÓ ficam parados.
+      // Quando o texto de nível está visível, os inimigos permanecem presos na formação
       if (this.game.timerApresentacaoFase > 0) {
         this.x = this.game.formacaoX + this.baseX;
         this.y = this.game.formacaoY + this.baseY;
@@ -65,7 +70,7 @@ export default class Enemy extends Entity {
         return false;
       }
 
-      // 2. LÓGICA NORMAL (Só executa quando o nome da fase some)
+      // Lógica normal: quando em 'idle' permanecem na formação e eventualmente iniciam um 'swoop'
       if (this.estado === "idle") {
         this.x = this.game.formacaoX + this.baseX;
         this.y = this.game.formacaoY + this.baseY;
@@ -88,7 +93,6 @@ export default class Enemy extends Entity {
       } else if (this.estado === "swoop") {
         this.swoopT += this.tipoInimigo === 2 ? 0.015 : 0.01;
         const t = this.swoopT;
-
         if (t >= 1) {
           this.estado = "return";
         } else {
@@ -115,7 +119,6 @@ export default class Enemy extends Entity {
         const dx = alvoX - this.x,
           dy = alvoY - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-
         if (dist < 5) this.estado = "idle";
         else {
           this.x += (dx / dist) * 4;
@@ -138,7 +141,7 @@ export default class Enemy extends Entity {
 
       return false;
     } else {
-      // 3. MORTE DO INIMIGO
+      // Quando está em estado de colisão processa a morte/queda de itens
       this.hp--;
       if (this.hp <= 0) {
         this.game.criarExplosao(this.x, this.y);
@@ -147,9 +150,7 @@ export default class Enemy extends Entity {
 
         if (Math.random() < 0.1 && !this.game.isMenuDemo) {
           const tipos = ["multi", "slow", "bomb"];
-          if (this.game.vidasJogador < 3) {
-            tipos.push("life", "life");
-          }
+          if (this.game.vidasJogador < 3) tipos.push("life", "life");
           const drop = tipos[Math.floor(Math.random() * tipos.length)];
           this.game.poolItens.get(
             this.x + this.width / 2 - 12,

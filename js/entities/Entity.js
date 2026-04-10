@@ -1,4 +1,8 @@
-// js/entities/Entity.js
+/*
+  Entity.js
+  - Classe base simples para todas as entidades do jogo (posição, dimensão, estado de vida).
+  - Fornece métodos utilitários básicos usados por entidades concretas.
+*/
 export default class Entity {
   constructor() {
     this.x = 0;

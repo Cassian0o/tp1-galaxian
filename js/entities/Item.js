@@ -1,4 +1,8 @@
-// js/entities/Item.js
+/*
+  Item.js
+  - Representa power-ups/drop de itens que a nave pode coletar.
+  - Ao colidir, aplica o efeito correspondente (tiro múltiplo, lentidão, bomba, vidas).
+*/
 import Entity from "./Entity.js";
 import { assets } from "../engine/Assets.js";
 

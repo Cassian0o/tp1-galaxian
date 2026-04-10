@@ -1,4 +1,8 @@
-// js/main.js
+/*
+  main.js
+  - Inicializa o jogo, gerencia a interface (menus, telas sobrepostas) e high scores.
+  - Carrega recursos via AssetManager, configura listeners de input e controla transições de tela.
+*/
 import { AssetManager, assets } from "./engine/Assets.js";
 import { input } from "./engine/Input.js";
 import Game from "./core/Game.js";
@@ -11,20 +15,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   splashScreen.style.display = "flex";
   splashStatus.innerText = "A carregar recursos...";
 
-  const hideAllScreens = () => {
+  const hideAllScreens = () =>
     document
       .querySelectorAll(".overlay-screen")
       .forEach((el) => (el.style.display = "none"));
-  };
 
-  // ======== SISTEMA DE RECORDES (HIGH SCORES) ======== //
+  // Carrega e exibe a lista de recordes (high scores) armazenada em localStorage
   const carregarRecordes = () => {
     const recordes = JSON.parse(
       localStorage.getItem("galaxian_recordes") || "[]",
     );
     const lista = document.getElementById("highscore-list");
     lista.innerHTML = "";
-
     if (recordes.length === 0) {
       lista.innerHTML =
         '<li style="color: #aaa; font-size: 16px;">Nenhum recorde ainda!</li>';
@@ -35,6 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  // Salva um novo recorde, mantém apenas o Top 10 e atualiza a UI
   const salvarRecorde = (inputId) => {
     const inputEl = document.getElementById(inputId);
     const nome = inputEl.value.trim().toUpperCase() || "ANÓNIMO";
@@ -44,24 +47,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       localStorage.getItem("galaxian_recordes") || "[]",
     );
     recordes.push({ nome, pontos });
-
-    // Ordena do maior para o menor e guarda apenas o Top 10
     recordes.sort((a, b) => b.pontos - a.pontos);
     recordes = recordes.slice(0, 10);
-
     localStorage.setItem("galaxian_recordes", JSON.stringify(recordes));
 
-    inputEl.value = ""; // Limpa o campo de texto
-    carregarRecordes(); // Atualiza a lista visualmente
+    inputEl.value = "";
+    carregarRecordes();
 
-    // Volta ao menu
     hideAllScreens();
     document.getElementById("start-screen").style.display = "block";
     document.getElementById("game-container").classList.add("demo-mode");
     game.voltarAoMenu();
   };
 
-  // Carrega os recordes logo que o jogo abre
   carregarRecordes();
 
   try {
@@ -114,7 +112,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
 
-    // ======== EVENTOS DE SALVAR RECORDES ======== //
     document
       .getElementById("btn-salvar-lose")
       .addEventListener("click", () => salvarRecorde("player-name-lose"));
@@ -136,7 +133,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         game.iniciar();
       });
 
-    // MENUS SECUNDÁRIOS
     document.getElementById("btn-continuar").addEventListener("click", () => {
       game.pausado = false;
       document.getElementById("pause-screen").style.display = "none";
@@ -185,7 +181,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (input.events["mute"]) input.events["mute"]();
     });
 
-    // ========= EVENTOS DE TECLADO MOUSE ========= //
+    // Eventos de teclado / ações do input manager
     input.on("escape", () => {
       if (!game.isMenuDemo && game.nave && game.nave.vivo && !game.venceu) {
         game.pausado = !game.pausado;
@@ -193,26 +189,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("pause-screen").style.display = game.pausado
           ? "block"
           : "none";
-
-        if (game.timerApresentacaoFase > 0) {
+        if (game.timerApresentacaoFase > 0)
           document.getElementById("level-up-screen").style.display =
             game.pausado ? "none" : "block";
-        }
       }
     });
 
     input.on("restart", () => {
       if (game.isMenuDemo) return;
-      if (!game.nave.vivo || game.venceu) {
+      if (!game.nave.vivo || game.venceu)
         document.getElementById("btn-reiniciar-sem-salvar").click();
-      } else {
+      else {
         game.pausado = true;
         document.getElementById("pause-screen").style.display = "none";
         document.getElementById("confirm-restart").style.display = "block";
-
-        if (game.timerApresentacaoFase > 0) {
+        if (game.timerApresentacaoFase > 0)
           document.getElementById("level-up-screen").style.display = "none";
-        }
       }
     });
 
@@ -247,9 +239,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const mouseX = e.clientX - rect.left;
         let novoX = mouseX - game.nave.width / 2;
         if (novoX < 0) novoX = 0;
-        if (novoX > game.shipCanvas.width - game.nave.width) {
+        if (novoX > game.shipCanvas.width - game.nave.width)
           novoX = game.shipCanvas.width - game.nave.width;
-        }
         game.nave.x = novoX;
       }
     });

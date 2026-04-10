@@ -1,4 +1,9 @@
-// js/engine/Sprite.js
+/*
+  Sprite.js
+  - Representa uma animação baseada em atlas de sprites.
+  - `quadros` é um array de índices de quadro; `speed` controla avanço do índice.
+  - `once` indica que a animação deve ser marcada como concluída após uma execução.
+*/
 import { assets } from "./Assets.js";
 
 export default class Sprite {

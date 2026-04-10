@@ -1,4 +1,9 @@
-// js/engine/Pool.js
+/*
+  Pool.js
+  - Implementa um ObjectPool genérico para reutilização de objetos (inimigos, tiros, itens).
+  - Evita alocações/destruições frequentes criando instâncias e rotacionando-as conforme usado.
+  - Também fornece um SoundPool simples para tocar múltiplas instâncias de som sem bloquear.
+*/
 export class ObjectPool {
   constructor(tamanhoMax, FactoryClass, contextArgs) {
     this.tamanho = tamanhoMax;
@@ -6,14 +11,16 @@ export class ObjectPool {
     this.init(FactoryClass, contextArgs);
   }
 
+  // Inicializa (ou reinicializa) a lista interna de objetos
   init(FactoryClass, contextArgs) {
-    this.pool = []; // <- ISSO AQUI garante que os inimigos mortos sejam removidos da memória
+    this.pool = [];
     for (let i = 0; i < this.tamanho; i++) {
       const obj = new FactoryClass(contextArgs);
       this.pool[i] = obj;
     }
   }
 
+  // Retorna somente objetos ativos (vivo === true)
   getPool() {
     const obj = [];
     for (let i = 0; i < this.tamanho; i++) {
@@ -22,6 +29,7 @@ export class ObjectPool {
     return obj;
   }
 
+  // Pega um objeto livre (o último do array) e o reusa chamando spawn
   get(x, y, velocidade, infoTipo) {
     if (!this.pool[this.tamanho - 1].vivo) {
       this.pool[this.tamanho - 1].spawn(x, y, velocidade, infoTipo);
@@ -29,6 +37,7 @@ export class ObjectPool {
     }
   }
 
+  // Itera sobre a pool, desenha/atualiza objetos vivos e os recicla quando terminam
   animate() {
     for (let i = 0; i < this.tamanho; i++) {
       if (this.pool[i].vivo) {
@@ -56,6 +65,7 @@ export class SoundPool {
     }
   }
 
+  // Toca a próxima instância disponível do pool de som
   get() {
     if (
       this.pool[this.somAtual].currentTime === 0 ||

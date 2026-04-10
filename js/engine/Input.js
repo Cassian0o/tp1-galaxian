@@ -1,4 +1,10 @@
-// js/engine/Input.js
+/*
+  Input.js
+  - Mapeia códigos de tecla para ações do jogo e expõe um gerenciador de eventos simples.
+  - `input.keys` mantém o estado atual das teclas (pressionadas/não pressionadas).
+  - Eventos registrados via `on(event, callback)` são acionados quando as teclas correspondentes
+    são pressionadas (keydown).
+*/
 export const CODIGOS_TECLAS = {
   27: "escape",
   32: "space",
@@ -20,17 +26,16 @@ class InputManager {
     this.events[event] = callback;
   }
 
+  // Inicializa listeners do DOM para keydown/keyup e dispara callbacks registrados
   initListeners() {
     document.addEventListener("keydown", (e) => {
       if (e.target.tagName.toLowerCase() === "input") return;
-
       const key = CODIGOS_TECLAS[e.keyCode || e.which];
       if (key && this.keys.hasOwnProperty(key)) {
         e.preventDefault();
         this.keys[key] = true;
       }
 
-      // Dispara eventos de interface (M, R, ESC) na hora que a tecla desce
       if (key === "escape" && this.events["escape"]) this.events["escape"]();
       if (key === "m" && this.events["mute"]) this.events["mute"]();
       if (key === "r" && this.events["restart"]) this.events["restart"]();

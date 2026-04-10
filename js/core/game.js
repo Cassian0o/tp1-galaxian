@@ -1,4 +1,3 @@
-// js/core/Game.js
 import QuadTree from "../engine/QuadTree.js";
 import { ObjectPool, SoundPool } from "../engine/Pool.js";
 import { assets } from "../engine/Assets.js";
@@ -10,7 +9,15 @@ import Bullet from "../entities/Bullet.js";
 import Item from "../entities/Item.js";
 import Sprite from "../engine/Sprite.js";
 
+/*
+  Game
+  - Controla o estado global do jogo: setup, loop, atualizações, desenho e colisões.
+  - Mantém pools de objetos, quadTree para colisões e timers de efeitos (lentidão, apresentação).
+  - Fluxo típico: criar instância -> setup() -> gerarOnda() -> iniciar() -> loop()
+*/
+
 export default class Game {
+  // Inicializa estado e configuração dos níveis
   constructor() {
     this.vidasJogador = 3;
     this.pausado = false;
@@ -20,8 +27,9 @@ export default class Game {
     this.explosoes = [];
     this.estaAnimando = false;
     this.estaMutado = false;
+    // timers usados pelo loop para efeitos e exibição de título de fase
     this.timerLentidao = 0;
-    this.timerApresentacaoFase = 0; // NOVO: Timer da tela de aviso
+    this.timerApresentacaoFase = 0;
 
     this.configsNiveis = [
       {
@@ -64,6 +72,7 @@ export default class Game {
     this.configNivelAtual = this.configsNiveis[0];
   }
 
+  // Configura canvases, contexto 2D, entidades principais e pools
   setup() {
     this.bgCanvas = document.getElementById("background");
     this.starCanvas = document.getElementById("starfield");
@@ -112,6 +121,7 @@ export default class Game {
     this.explosionSound = new SoundPool(20, "sounds/explosion.wav", 0.1);
   }
 
+  // Restaura pools e estado da nave para iniciar um novo mundo/fase
   resetarMundo() {
     this.poolInimigos.init(Enemy, this);
     this.poolItens.init(Item, this);
@@ -131,13 +141,14 @@ export default class Game {
     this.nave.y = this.naveStartY;
     this.nave.vivo = true;
     this.nave.colidindo = false;
-    this.nave.timerInvulnerabilidade = 0; // NOVO: Remove proteção antiga ao reiniciar
+    this.nave.timerInvulnerabilidade = 0;
     this.explosoes = [];
     this.timerLentidao = 0;
     this.timerApresentacaoFase = 0;
     this.quadTree.clear();
   }
 
+  // Volta para o modo demo/menu e reinicia o mundo
   voltarAoMenu() {
     this.isMenuDemo = true;
     this.pausado = false;
@@ -155,6 +166,7 @@ export default class Game {
     this.iniciar();
   }
 
+  // Inicia reprodução de música apropriada e começa o loop se ainda não estiver
   iniciar() {
     this.estaJogando = true;
     if (this.isMenuDemo) {
@@ -168,6 +180,7 @@ export default class Game {
     if (!this.estaAnimando) this.loop();
   }
 
+  // Loop principal: atualiza estados, detecta colisões e desenha entidades
   loop() {
     this.estaAnimando = true;
     if (!this.estaJogando && !this.pausado) {
@@ -201,7 +214,7 @@ export default class Game {
     if (this.timerLentidao > 0) this.timerLentidao--;
     if (!this.isMenuDemo) this.atualizarHUDNivel();
 
-    // LÓGICA DO TIMER DE APRESENTAÇÃO
+    // Enquanto timerApresentacaoFase > 0: mostra o texto de nível e mantém inimigos congelados
     if (this.timerApresentacaoFase > 0) {
       this.timerApresentacaoFase--;
       if (this.timerApresentacaoFase === 0) {
@@ -209,6 +222,7 @@ export default class Game {
       }
     }
 
+    // Atualiza quadTree com todos os objetos relevantes antes de checar colisões
     this.quadTree.clear();
     this.quadTree.insert(this.nave);
     this.quadTree.insert(this.nave.poolDeTiros.getPool());
@@ -234,6 +248,11 @@ export default class Game {
     }
   }
 
+  /*
+    Detecta colisões usando a quadTree: para cada objeto obtém
+    possíveis colisores e testa colisão por bounding-box.
+    Ignora colisões quando a nave estiver temporariamente invulnerável.
+  */
   detectarColisao() {
     let objetos = [];
     this.quadTree.getAllObjects(objetos);
@@ -248,14 +267,13 @@ export default class Game {
           objetos[x].y < obj[y].y + obj[y].height &&
           objetos[x].y + objetos[x].height > obj[y].y
         ) {
-          // NOVO: Ignora a colisão por completo caso a nave esteja com a proteção ativa
           const naveXInmune =
             objetos[x].tipo === "ship" && objetos[x].timerInvulnerabilidade > 0;
           const naveYInmune =
             obj[y].tipo === "ship" && obj[y].timerInvulnerabilidade > 0;
 
           if (naveXInmune || naveYInmune) {
-            continue; // Pula a colisão, fazendo balas/inimigos passarem através
+            continue;
           }
 
           if (objetos[x].tipo === "item") {
@@ -271,6 +289,10 @@ export default class Game {
     }
   }
 
+  /*
+    Atualiza posição da formação de inimigos e trata colisão com bordas/fundo.
+    Enquanto timerApresentacaoFase > 0 a atualização da formação fica suspensa.
+  */
   atualizarInimigos() {
     const inimigos = this.poolInimigos.getPool();
     if (inimigos.length === 0) {
@@ -279,7 +301,6 @@ export default class Game {
       return;
     }
 
-    // CONGELA OS INIMIGOS ENQUANTO O TÍTULO ESTIVER NA TELA
     if (this.timerApresentacaoFase > 0) return;
 
     const mod = this.timerLentidao > 0 ? 0.3 : 1;
@@ -319,6 +340,10 @@ export default class Game {
       this.formacaoY = Math.min(this.formacaoAlvoY, this.formacaoY + 0.5);
   }
 
+  /*
+    Gera inimigos para a formação de acordo com a configuração de nível.
+    Quando não é demo, exibe o texto de "level up" por um número de frames.
+  */
   gerarOnda() {
     if (this.isMenuDemo) {
       this.configNivelAtual = {
@@ -346,8 +371,7 @@ export default class Game {
           name: "SETOR X",
         };
       }
-      // Configura o timer para 150 frames (aprox 2.5 segundos) e remove o setTimeout!
-      this.timerApresentacaoFase = 150;
+      this.timerApresentacaoFase = 150; // frames que mostram o nome do nível
       document.getElementById("level-up-text").innerText =
         this.configNivelAtual.name;
       document.getElementById("level-up-screen").style.display = "block";
@@ -434,19 +458,19 @@ export default class Game {
       `${this.pontuacaoJogador} | NÍVEL ${this.nivelAtual}`;
   }
 
+  /*
+    Bomba: marca alguns inimigos da formação para morrer e aplica um flash de tela.
+  */
   acionarBomba() {
     const inimigos = this.poolInimigos.getPool();
 
-    // Simula uma colisão fatal em cerca de 50% dos inimigos aleatoriamente
     for (let i = 0; i < inimigos.length; i++) {
-      // Só atinge quem está na formação (idle) e tem 50% de probabilidade
       if (inimigos[i].estado === "idle" && Math.random() > 0.5) {
         inimigos[i].colidindo = true;
-        inimigos[i].hp = 1; // Garante que a lógica de explosão ocorra no próximo frame
+        inimigos[i].hp = 1;
       }
     }
 
-    // Efeito visual de Flash no ecrã
     this.mainContext.fillStyle = "rgba(255, 255, 255, 0.9)";
     this.mainContext.fillRect(
       0,

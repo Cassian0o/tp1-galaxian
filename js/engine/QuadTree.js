@@ -1,4 +1,9 @@
-// js/engine/QuadTree.js
+/*
+  QuadTree.js
+  - Estrutura espacial para acelerar buscas de colisão.
+  - Divide o espaço em até `maxNiveis` níveis e mantém objetos em nós apropriados.
+  - Métodos principais: insert, findObjects, getAllObjects, clear.
+*/
 export default class QuadTree {
   constructor(boundBox, lvl = 0) {
     this.maxObjetos = 10;

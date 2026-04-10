@@ -1,4 +1,8 @@
-// js/engine/Utils.js
+/*
+  Utils.js
+  - Utilitários pequenos usados pelo jogo. Atualmente contém um polyfill para requestAnimationFrame
+    que garante um fallback para setTimeout quando necessário.
+*/
 export function requestAnimFrame(callback) {
   if (window.requestAnimationFrame) {
     return window.requestAnimationFrame(callback);

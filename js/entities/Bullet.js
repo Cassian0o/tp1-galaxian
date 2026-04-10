@@ -1,4 +1,8 @@
-// js/entities/Bullet.js
+/*
+  Bullet.js
+  - Representa projéteis (do jogador ou inimigos).
+  - `variante` define o comportamento/colisão (ex: 'bullet' colide com 'enemy').
+*/
 import Entity from "./Entity.js";
 import { assets } from "../engine/Assets.js";
 
