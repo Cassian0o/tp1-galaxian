@@ -30,6 +30,7 @@ export default class Game {
     // timers usados pelo loop para efeitos e exibição de título de fase
     this.timerLentidao = 0;
     this.timerApresentacaoFase = 0;
+    this.levelTime = 0;
 
     this.configsNiveis = [
       {
@@ -37,7 +38,8 @@ export default class Game {
         cols: 10,
         types: [1],
         speed: 1.8,
-        fireRate: 0.005,
+        // taxa de disparo inicial mais baixa para facilitar começo
+        fireRate: 0.0025,
         bgSpeed: 1.5,
         name: "SETOR ALFA",
       },
@@ -46,7 +48,7 @@ export default class Game {
         cols: 10,
         types: [1, 1, 2],
         speed: 2.5,
-        fireRate: 0.01,
+        fireRate: 0.005,
         bgSpeed: 2,
         name: "SETOR BETA",
       },
@@ -55,7 +57,7 @@ export default class Game {
         cols: 11,
         types: [1, 2, 3],
         speed: 3.2,
-        fireRate: 0.015,
+        fireRate: 0.008,
         bgSpeed: 2.5,
         name: "ZONA VERMELHA",
       },
@@ -64,7 +66,7 @@ export default class Game {
         cols: 12,
         types: [1, 2, 2, 3],
         speed: 4.0,
-        fireRate: 0.025,
+        fireRate: 0.012,
         bgSpeed: 3,
         name: "LA BESTIA NEGRA",
       },
@@ -233,6 +235,9 @@ export default class Game {
 
     this.atualizarInimigos();
 
+    // contador de frames desde o início do nível (usado para ramp-up da dificuldade)
+    if (!this.isMenuDemo && this.timerApresentacaoFase <= 0) this.levelTime++;
+
     if (this.nave.vivo) {
       this.fundo.draw();
       this.campoEstrelar.draw();
@@ -346,32 +351,36 @@ export default class Game {
   */
   gerarOnda() {
     if (this.isMenuDemo) {
+      // demo/menu: reduzir taxa para evitar muitos tiros na tela enquanto no menu
       this.configNivelAtual = {
         rows: 6,
         cols: 12,
         types: [1, 2, 3],
         speed: 3.5,
-        fireRate: 0.08,
+        fireRate: 0.02,
         bgSpeed: 4,
         name: "",
       };
       this.timerApresentacaoFase = 0;
+      this.levelTime = 0;
     } else {
       if (this.nivelAtual <= this.configsNiveis.length) {
         this.configNivelAtual = this.configsNiveis[this.nivelAtual - 1];
       } else {
         const inf = this.nivelAtual - this.configsNiveis.length;
+        // suaviza a progressão de fireRate em níveis altos
         this.configNivelAtual = {
           rows: 6,
           cols: 12,
           types: [1, 2, 3],
           speed: 4 + inf * 0.2,
-          fireRate: 0.03 + inf * 0.005,
+          fireRate: 0.02 + inf * 0.003,
           bgSpeed: 3,
           name: "SETOR X",
         };
       }
       this.timerApresentacaoFase = 150; // frames que mostram o nome do nível
+      this.levelTime = 0;
       document.getElementById("level-up-text").innerText =
         this.configNivelAtual.name;
       document.getElementById("level-up-screen").style.display = "block";

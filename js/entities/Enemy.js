@@ -136,8 +136,12 @@ export default class Enemy extends Entity {
         );
 
       const mod = this.game.timerLentidao > 0 ? 0.5 : 1;
-      if (Math.random() < this.game.configNivelAtual.fireRate * mod)
-        this.atirar();
+      // ramp-up interno do nível: a taxa começa reduzida e aumenta com o tempo do nível
+      const levelTime = this.game.levelTime || 0;
+      const timeFactor = Math.min(1, levelTime / 600); // atinge 1 após ~600 frames (~10s)
+      const ramp = 0.3 + 0.7 * timeFactor; // inicia em 30% da taxa e sobe até 100%
+      const effectiveFireRate = this.game.configNivelAtual.fireRate * ramp * mod;
+      if (Math.random() < effectiveFireRate) this.atirar();
 
       return false;
     } else {
