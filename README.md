@@ -44,5 +44,8 @@ Além das funcionalidades básicas obrigatórias, o projeto inclui os seguintes 
 
 ## 📸 Screenshots
 1. *Menu Inicial com modo Demo ao fundo.*
+![alt text](print_menu.png)
 2. *Gameplay com inimigos em formação e ataque rasante ativo.*
+![alt text](print_gameplay.png)
 3. *Tela de Game Over*
+![alt text](print_gameover.png)
