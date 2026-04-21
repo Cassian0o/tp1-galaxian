@@ -34,39 +34,38 @@ export default class Game {
 
     this.configsNiveis = [
       {
-        rows: 4,
-        cols: 10,
+        rows: 3, // Reduzido de 4 para 3 (Menos inimigos)
+        cols: 8, // Reduzido de 10 para 8 (Menos inimigos)
         types: [1],
-        speed: 1.8,
-        // taxa de disparo inicial mais baixa para facilitar começo
-        fireRate: 0.0025,
+        speed: 1.5,
+        fireRate: 0.001, // Reduzido de 0.0025 (Menos tiros)
         bgSpeed: 1.5,
         name: "SETOR ALFA",
       },
       {
-        rows: 5,
-        cols: 10,
+        rows: 4, // Reduzido de 5 para 4
+        cols: 9, // Reduzido de 10 para 9
         types: [1, 1, 2],
-        speed: 2.5,
-        fireRate: 0.005,
+        speed: 2.0,
+        fireRate: 0.0025, // Reduzido de 0.005
         bgSpeed: 2,
         name: "SETOR BETA",
       },
       {
-        rows: 5,
-        cols: 11,
+        rows: 4, // Reduzido de 5 para 4
+        cols: 10, // Reduzido de 11 para 10
         types: [1, 2, 3],
-        speed: 3.2,
-        fireRate: 0.008,
+        speed: 2.8,
+        fireRate: 0.004, // Reduzido de 0.008
         bgSpeed: 2.5,
         name: "ZONA VERMELHA",
       },
       {
-        rows: 6,
-        cols: 12,
+        rows: 5, // Reduzido de 6 para 5
+        cols: 11, // Reduzido de 12 para 11
         types: [1, 2, 2, 3],
-        speed: 4.0,
-        fireRate: 0.012,
+        speed: 3.5,
+        fireRate: 0.008, // Reduzido de 0.012
         bgSpeed: 3,
         name: "LA BESTIA NEGRA",
       },
