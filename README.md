@@ -40,7 +40,7 @@ Além das funcionalidades básicas obrigatórias, o projeto inclui os seguintes 
 
 ## 🔗 Links
 * **Repositório/Live Demo:** [https://cassian0o.github.io/tp1-galaxian/]
-* **Vídeo do Trailer:**
+* **Vídeo do Trailer:** [https://youtu.be/RZnCx7zUjM4?si=jIEvQH8G7KI2uNz6]
 
 ## 📸 Screenshots
 1. *Menu Inicial com modo Demo ao fundo.*
