@@ -47,13 +47,6 @@ export default class Enemy extends Entity {
   }
 
   draw() {
-    this.context.clearRect(
-      this.x - 2,
-      this.y - 2,
-      this.width + 4,
-      this.height + 4,
-    );
-
     if (!this.colidindo) {
       // Quando o texto de nível está visível, os inimigos permanecem presos na formação
       if (this.game.timerApresentacaoFase > 0) {
@@ -140,7 +133,8 @@ export default class Enemy extends Entity {
       const levelTime = this.game.levelTime || 0;
       const timeFactor = Math.min(1, levelTime / 600); // atinge 1 após ~600 frames (~10s)
       const ramp = 0.3 + 0.7 * timeFactor; // inicia em 30% da taxa e sobe até 100%
-      const effectiveFireRate = this.game.configNivelAtual.fireRate * ramp * mod;
+      const effectiveFireRate =
+        this.game.configNivelAtual.fireRate * ramp * mod;
       if (Math.random() < effectiveFireRate) this.atirar();
 
       return false;

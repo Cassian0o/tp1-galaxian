@@ -27,12 +27,6 @@ export default class Item extends Entity {
   }
 
   draw() {
-    this.context.clearRect(
-      this.x - 1,
-      this.y - 1,
-      this.width + 2,
-      this.height + 2,
-    );
     this.y -= this.velocidadeY;
 
     if (this.colidindo) {

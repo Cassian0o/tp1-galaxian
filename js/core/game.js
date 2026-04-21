@@ -394,15 +394,56 @@ export default class Game {
     this.formacaoAlvoY = 50;
     this.direcaoFormacao = 1;
 
+    const tiposDisponiveis = [...new Set(cfg.types)].sort((a, b) => b - a);
+
+    const padrao = this.nivelAtual % 3;
+
     for (let r = 0; r < cfg.rows; r++) {
       for (let c = 0; c < cfg.cols; c++) {
-        const tipo = cfg.types[Math.floor(Math.random() * cfg.types.length)];
-        this.poolInimigos.get(0, 0, 2, [
-          c * 55,
-          r * 55,
-          tipo,
-          tipo === 3 ? 3 : 1,
-        ]);
+        let tipoEscolhido = tiposDisponiveis[tiposDisponiveis.length - 1]; // Fraco por defeito
+
+        if (tiposDisponiveis.length > 1) {
+          const forte = tiposDisponiveis[0];
+          const medio =
+            tiposDisponiveis.length > 2 ? tiposDisponiveis[1] : forte;
+          const fraco = tiposDisponiveis[tiposDisponiveis.length - 1];
+
+          if (padrao === 0) {
+            // PADRÃO 0: Xadrez (Intercala naves)
+            if ((r + c) % 2 === 0) {
+              tipoEscolhido = forte;
+            } else if ((r + c) % 3 === 0) {
+              tipoEscolhido = medio;
+            } else {
+              tipoEscolhido = fraco;
+            }
+          } else if (padrao === 1) {
+            // PADRÃO 1: Ponta de Lança / Formato "V" (Fortes no centro e diagonais)
+            const centro = Math.floor((cfg.cols - 1) / 2);
+            const distanciaCentro = Math.abs(c - centro);
+
+            if (distanciaCentro === r) {
+              tipoEscolhido = forte;
+            } else if (distanciaCentro < r) {
+              tipoEscolhido = medio;
+            } else {
+              tipoEscolhido = fraco;
+            }
+          } else {
+            // PADRÃO 2: Moldura (Fortes nas bordas blindando os mais fracos no meio)
+            if (r === 0 || c === 0 || c === cfg.cols - 1) {
+              tipoEscolhido = forte;
+            } else if (r === 1 || c === 1 || c === cfg.cols - 2) {
+              tipoEscolhido = medio;
+            } else {
+              tipoEscolhido = fraco;
+            }
+          }
+        }
+
+        const hp = tipoEscolhido === 3 ? 3 : 1;
+
+        this.poolInimigos.get(0, 0, 2, [c * 55, r * 55, tipoEscolhido, hp]);
       }
     }
   }

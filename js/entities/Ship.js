@@ -62,7 +62,6 @@ export default class Ship extends Entity {
     if (this.timerInvulnerabilidade > 0) this.timerInvulnerabilidade--;
 
     if (this.game.isMenuDemo) {
-      this.context.clearRect(this.x, this.y, this.width, this.height);
       this.x =
         this.canvasWidth / 2 -
         this.width / 2 +
