@@ -5,7 +5,6 @@
 
 ## 👥 Autores
 * **Marcelo Cassiano**
-* **Thainá Martins**
 
 ## 🚀 Itens Adicionais Implementados
 Além das funcionalidades básicas obrigatórias, o projeto inclui os seguintes diferenciais:
